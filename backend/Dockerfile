@@ -6,10 +6,10 @@ ENV PATH=/opt/venv/bin:$PATH
 
 WORKDIR /app
 
-COPY ./requirements.txt /tmp/requirements.txt
+COPY backend/requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-COPY ./src .
+COPY backend/src .
 
-CMD ["python", "-m", "http.server", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
