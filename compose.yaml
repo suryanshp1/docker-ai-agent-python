@@ -12,7 +12,7 @@ services:
   app:
     build:
       context: ./backend
-      dockerfile: backend.Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8080:8000"
     # command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
@@ -29,7 +29,7 @@ services:
       - action: rebuild
         path: backend/requirements.txt
       - action: rebuild
-        path: backend/backend.Dockerfile
+        path: backend/Dockerfile
       # - action: restart
       #   path: backend/src
       # - action: sync+restart
