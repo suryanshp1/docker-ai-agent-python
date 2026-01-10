@@ -1,5 +1,8 @@
 FROM python:3.13.4-slim-bullseye
 
+RUN apt update && apt install -y curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # create python virtual environment
 RUN python -m venv /opt/venv
 ENV PATH=/opt/venv/bin:$PATH
