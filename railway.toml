@@ -1,2 +1,3 @@
 [build]
 dockerfilePath = "backend/Dockerfile"
+watchPatterns = ["backend/requirements.txt", "backend/Dockerfile", "backend/src/**"]
