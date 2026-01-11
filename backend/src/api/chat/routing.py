@@ -6,6 +6,7 @@ from api.ai.services import generate_email_messages
 from api.ai.schemas import EmailMessage, SupervisorMessageSchema
 from api.ai.agents import get_supervisor
 from typing import List
+from langchain_core.messages import AIMessage
 
 router = APIRouter()
 
@@ -24,32 +25,43 @@ def chat_create_message(
     payload: ChatMessagePayload,
     session: Session = Depends(get_session)
 ) -> SupervisorMessageSchema:
-    # validation
-    data = payload.model_dump()
+    try:
+        # validation
+        data = payload.model_dump()
 
-    object_instance = ChatMessage.model_validate(data)
+        object_instance = ChatMessage.model_validate(data)
 
-    # ready to store in database
-    session.add(object_instance)
-    session.commit()
-    # session.refresh(object_instance) # ensures id/primary key is added to the object instance
+        # ready to store in database
+        session.add(object_instance)
+        session.commit()
+        # session.refresh(object_instance) # ensures id/primary key is added to the object instance
 
-    # generate response
-    # response = generate_email_messages(payload.message)
+        # generate response
+        # response = generate_email_messages(payload.message)
 
-    response = get_supervisor().invoke({"messages": [{"role": "user", "content": payload.message}]})
-    if not response:
-        raise HTTPException(status_code=400, detail="Failed to generate response")
+        response = get_supervisor().invoke({"messages": [{"role": "user", "content": payload.message}]})
+        if not response:
+            raise HTTPException(status_code=400, detail="Failed to generate response")
 
-    messages = response.get("messages", [])
-    if not messages:
-        raise HTTPException(status_code=400, detail="Failed to generate response")
+        messages = response.get("messages", [])
+        if not messages:
+            raise HTTPException(status_code=400, detail="Failed to generate response")
 
-    message = messages[-1]
-    if message.get("role") != "assistant":
-        raise HTTPException(status_code=400, detail="Failed to generate response")
+        message = messages[-1]
+        
+        if isinstance(message, AIMessage):
+             return SupervisorMessageSchema(content=message.content)
+        
+        # Fallback for other message types or if it's a dict (though previous error suggests it's an object)
+        if hasattr(message, "content"):
+             return SupervisorMessageSchema(content=message.content)
+             
+        if isinstance(message, dict) and message.get("role") == "assistant":
+             return SupervisorMessageSchema(content=message.get("content"))
 
-    return message
+        raise HTTPException(status_code=400, detail="Failed to generate valid response")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     
 # /api/chats/recent/
@@ -58,6 +70,9 @@ def chat_create_message(
 def chat_get_recent_messages(
     session: Session = Depends(get_session)
 ):
-    query = select(ChatMessage).order_by(ChatMessage.id.desc())
-    return session.exec(query).fetchall()[:10]
+    try:
+        query = select(ChatMessage).order_by(ChatMessage.id.desc())
+        return session.exec(query).fetchall()[:10]
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
