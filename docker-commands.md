@@ -69,7 +69,7 @@ _From host terminal_
 curl http://localhost:12434/engines/v1/chat/completions \
     -H "Content-Type: application/json" \
     -d '{
-        "model": "ai/qwen3:0.6B-Q4_K_M",
+        "model": "ai/qwen3:8B-Q4_K_M",
         "messages": [
             {
                 "role": "system",
@@ -89,7 +89,7 @@ _From within a container_
 curl http://model-runner.docker.internal/engines/v1/chat/completions \
     -H "Content-Type: application/json" \
     -d '{
-        "model": "ai/qwen3:0.6B-Q4_K_M3",
+        "model": "ai/qwen3:8B-Q4_K_M",
         "messages": [
             {
                 "role": "system",
@@ -101,4 +101,14 @@ curl http://model-runner.docker.internal/engines/v1/chat/completions \
             }
         ]
     }'
+```
+
+For opening a python file interactively in a container
+```bash
+docker compose exec -it app bash
+python -i inbox_reader.py  # it will open the file interactively to run file functions directly without any need to run the app or import the libraries
+
+python # to open python shell
+from api.ai.assistants import *
+email_assistant("show me my latest email")
 ```

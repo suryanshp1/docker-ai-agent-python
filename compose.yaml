@@ -1,8 +1,8 @@
 # MODEL RUNNER
 models:
   llm:
-    model: ai/qwen3:0.6B-Q4_K_M
-    context_size: 4096
+    model: ai/qwen3:8B-Q4_K_M
+    # context_size: 8192
   
 
 services:
