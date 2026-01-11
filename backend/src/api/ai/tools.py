@@ -1,6 +1,7 @@
 from langchain_core.tools import tool
 from api.emailer.sender import send_mail
 from api.emailer.inbox_reader import read_inbox
+from api.ai.services import generate_email_messages
 
 @tool
 def send_mail(subject: str, content: str) -> str:
@@ -43,6 +44,22 @@ def get_unread_emails(hours_ago: int = 48) -> str:
             for k, v in data.items():
                 msg += f"{k}:\t{v}\n"
             cleaned.append(msg)
-        return "---\n".join(cleaned)
+        return "---\n".join(cleaned)[:500]
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+@tool
+def research_email(query: str) -> str:
+    """
+    Research the given query and return the result.
+
+    Args:
+        query: The query to research
+
+    Returns:
+        str: The result of the research
+    """
+    try:
+        return generate_email_messages(query)
     except Exception as e:
         return f"Error: {str(e)}"
