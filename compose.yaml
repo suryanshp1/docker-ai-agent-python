@@ -1,3 +1,10 @@
+# MODEL RUNNER
+models:
+  llm:
+    model: ai/qwen3:0.6B-Q4_K_M
+    context_size: 4096
+  
+
 services:
   # STATIC
   # static_html:
@@ -28,6 +35,10 @@ services:
     depends_on:
       db_service:
         condition: service_healthy
+    models:
+      llm:
+        endpoint_var: LLM_ENDPOINT
+        model_var: LLM_MODEL_NAME
     develop:
       watch:
       - action: rebuild

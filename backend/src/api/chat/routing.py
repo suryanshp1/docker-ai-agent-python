@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends
 from api.db import get_session
 from sqlmodel import Session, select
 from .models import ChatMessagePayload, ChatMessage, ChatMessageListItem
+from api.ai.services import generate_email_messages
+from api.ai.schemas import EmailMessage
 from typing import List
 
 router = APIRouter()
@@ -14,11 +16,12 @@ def chat_health():
 
 # HTTP POST -> payload = {"message": "hello chat!"} -> {"id": 1, "message": "hello chat!"}
 # curl -X POST http://localhost:8080/api/chat -H "Content-Type: application/json" -d '{"message": "hello chat!"}'
-@router.post("")
+# curl -X POST http://localhost:8080/api/chat -H "Content-Type: application/json" -d '{"message": "Tell me how to be a software engineer ?"}'
+@router.post("", response_model=EmailMessage)
 def chat_create_message(
     payload: ChatMessagePayload,
     session: Session = Depends(get_session)
-):
+) -> EmailMessage:
     # validation
     data = payload.model_dump()
 
@@ -27,9 +30,11 @@ def chat_create_message(
     # ready to store in database
     session.add(object_instance)
     session.commit()
-    session.refresh(object_instance) # ensures id/primary key is added to the object instance
+    # session.refresh(object_instance) # ensures id/primary key is added to the object instance
 
-    return object_instance
+    # generate response
+    response = generate_email_messages(payload.message)
+    return response
 
     
 # /api/chats/recent/
